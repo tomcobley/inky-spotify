@@ -1,9 +1,19 @@
+#!/usr/bin/env python3
+
+import urllib.request
+import time
 import json
 import os 
 import spotipy
 
 from spotipy.oauth2 import SpotifyOAuth
-from spotipy.oauth2 import SpotifyClientCredentials
+from PIL import Image
+from inky.inky_uc8159 import Inky
+
+inky = Inky()
+SATURATION = 0.6
+REFRESH_PERIOD_SECS = 5
+CLEAN_PERIOD_CYCLES = 2
 
 def set_secrets():
     with open('secrets.json') as secrets_file:
@@ -18,24 +28,44 @@ def get_current_track_art_url():
     url = data['item']['album']['images'][0]['url']
     return url
 
+def update_display(url):
+    urllib.request.urlretrieve(url, 'cover.jpeg')
+
+    img = Image.open('cover.jpeg')
+    img = img.resize((448, 448), Image.ANTIALIAS)
+
+    img_resized = Image.new(img.mode, (600, 448), (255, 255, 255))
+    img_resized.paste(img, (76, 0))
+
+    inky.set_image(img_resized, saturation=SATURATION)
+    inky.show()
+
+def clean():
+    for _ in range(2):
+        for y in range(inky.height - 1):
+            for x in range(inky.width - 1):
+                inky.set_pixel(x, y, CLEAN)
+
+        inky.show()
+        time.sleep(1.0)
+
 if __name__ == "__main__":
-    
-    set_secrets() 
+    set_secrets()
     
     ticks = 0
     prev_url = ""
 
     while True:
-        
         url = get_current_track_art_url()
-        
+
         if url != prev_url:
-            
-            if ticks % 2 == 0:
-                clean_display()
-            
+            if ticks % CLEAN_PERIOD_CYCLES == 0:
+                clean()
+
+            prev_url = url
+            print ("Displaying new image: " + url)
             update_display(url)
 
-        time.sleep(10)
+        time.sleep(REFRESH_PERIOD_SECS)
 
 
