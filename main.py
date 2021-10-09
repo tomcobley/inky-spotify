@@ -11,7 +11,7 @@ from PIL import Image
 from inky.inky_uc8159 import Inky
 
 inky = Inky()
-SATURATION = 0.6
+SATURATION = 0.8
 REFRESH_PERIOD_SECS = 5
 CLEAN_PERIOD_CYCLES = 2
 
