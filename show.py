@@ -16,7 +16,6 @@ img = img.resize((448, 448), Image.ANTIALIAS)
 
 img_resized = Image.new(img.mode, (600, 448), (255, 255, 255))  
 img_resized.paste(img, (76, 0))
-img_resized.save('display.jpeg')
 
-inky.set_image(image, saturation=saturation)
+inky.set_image(img_resized, saturation=saturation)
 inky.show()
