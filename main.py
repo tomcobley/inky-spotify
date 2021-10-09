@@ -14,6 +14,8 @@ inky = Inky()
 SATURATION = 0.8
 REFRESH_PERIOD_SECS = 5
 CLEAN_PERIOD_CYCLES = 20
+VISIBLE_WINDOW_WIDTH = 448
+VISIBLE_WINDOW_HEIGHT = 448
 
 def set_secrets():
     with open('secrets.json') as secrets_file:
@@ -32,17 +34,19 @@ def update_display(url):
     urllib.request.urlretrieve(url, 'cover.jpeg')
 
     img = Image.open('cover.jpeg')
-    img = img.resize((448, 448), Image.ANTIALIAS)
+    img = img.resize((VISIBLE_WINDOW_WIDTH, VISIBLE_WINDOW_HEIGHT), Image.ANTIALIAS)
 
-    img_resized = Image.new(img.mode, (600, 448), (255, 255, 255))
-    img_resized.paste(img, (76, 0))
+    hidden_column_width = (inky.width - VISIBLE_WINDOW_WIDTH) / 2
+
+    img_resized = Image.new(img.mode, (inky.width, inky.height), (255, 255, 255))
+    img_resized.paste(img, (hidden_column_width, 0))
 
     inky.set_image(img_resized, saturation=SATURATION)
 
     for y in range(inky.height - 1):
-            for x in range(inky.width - 1):
-                inky.set_pixel(x, y, CLEAN)
-
+        for x in range(hidden_column_width - 1):
+            inky.set_pixel(x, y, CLEAN)
+            inky.set_pixel(x + VISIBLE_WINDOW_WIDTH, y, CLEAN)
 
     inky.show()
 
