@@ -3,82 +3,90 @@
 import urllib.request
 import time
 import json
-import os 
+import os
 import spotipy
 
 from spotipy.oauth2 import SpotifyOAuth
 from PIL import Image
+
 from inky.inky_uc8159 import Inky, CLEAN
 
 inky = Inky()
-SATURATION = 0.8
-REFRESH_PERIOD_SECS = 5
-CLEAN_PERIOD_CYCLES = 3
-VISIBLE_WINDOW_WIDTH = 448
-VISIBLE_WINDOW_HEIGHT = 448
 
-def set_secrets():
-    with open('secrets.json') as secrets_file:
-        data = json.load(secrets_file)
-        os.environ['SPOTIPY_CLIENT_ID'] = data['spotify_client_id']
-        os.environ['SPOTIPY_CLIENT_SECRET'] = data['spotify_client_secret']
-        os.environ['SPOTIPY_REDIRECT_URI'] = 'http://localhost:8888'
-    
-def get_current_track_art_url():
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope = "user-read-currently-playing"))
+SATURATION = 0.8
+WIDTH = 600  # eink screen dimensions
+HEIGHT = 448
+VISIBLE_WIDTH = 448  # area not covered by frame
+VISIBLE_HEIGHT = 448
+API_CALL_INTERVAL = 5
+CLEAN_INTERVAL = 3
+
+
+def authenticate():
+    with open("auth.json") as auth_file:
+        data = json.load(auth_file)
+        os.environ["SPOTIPY_CLIENT_ID"] = data["spotify_client_id"]
+        os.environ["SPOTIPY_CLIENT_SECRET"] = data["spotify_client_secret"]
+        os.environ["SPOTIPY_REDIRECT_URI"] = "http://localhost:8888"
+
+
+def get_current_album_art_url():
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-read-currently-playing"))
     data = sp.currently_playing()
     if data:
-        return data['item']['album']['images'][0]['url']
-    return None
+        return data["item"]["album"]["images"][0]["url"]
+    else:
+        return None
 
-def update_display(url):
-    urllib.request.urlretrieve(url, 'cover.jpeg')
 
-    img = Image.open('cover.jpeg')
-    img = img.resize((VISIBLE_WINDOW_WIDTH, VISIBLE_WINDOW_HEIGHT), Image.ANTIALIAS)
+def update_eink_display(url):
+    urllib.request.urlretrieve(url, "album_art.jpeg")
 
-    hidden_column_width = (600 - VISIBLE_WINDOW_WIDTH) // 2
+    img = Image.open("album_art.jpeg")
+    img = img.resize((VISIBLE_WIDTH, VISIBLE_HEIGHT), Image.ANTIALIAS)
 
-    img_resized = Image.new(img.mode, (inky.width, inky.height), (255, 255, 255))
+    hidden_column_width = (WIDTH - VISIBLE_WIDTH) // 2
+
+    img_resized = Image.new(img.mode, (WIDTH, HEIGHT), (255, 255, 255))
     img_resized.paste(img, (hidden_column_width, 0))
-
     inky.set_image(img_resized, saturation=SATURATION)
 
-    for y in range(inky.height - 1):
+    for y in range(HEIGHT - 1):
         for x in range(hidden_column_width - 1):
             inky.set_pixel(x, y, CLEAN)
             inky.set_pixel(600 - x - 1, y, CLEAN)
     inky.show()
 
+
 def clean():
 
     for _ in range(2):
-        for y in range(inky.height - 1):
-            for x in range(inky.width - 1):
+        for y in range(HEIGHT - 1):
+            for x in range(WIDTH - 1):
                 inky.set_pixel(x, y, CLEAN)
 
         inky.show()
-        time.sleep(1.0)
+        time.sleep(1)
+
 
 if __name__ == "__main__":
-    set_secrets()
-    
+    authenticate()
+
     ticks = 0
     prev_url = ""
 
     while True:
-        url = get_current_track_art_url()
+        url = get_current_album_art_url()
 
         if url != prev_url:
-            if ticks % CLEAN_PERIOD_CYCLES == 1:
+            if ticks % CLEAN_INTERVAL == 1:
                 clean()
-            
+
             prev_url = url
             if url != "":
-                print ("Displaying new image: " + url)
-                update_display(url)
-                ticks = ticks + 1
+                print("Displaying new image: " + url)
+                update_eink_display(url)
+                ticks += 1
 
-        time.sleep(REFRESH_PERIOD_SECS)
-
+        time.sleep(API_CALL_INTERVAL)
 
