@@ -13,7 +13,7 @@ from inky.inky_uc8159 import Inky, CLEAN
 inky = Inky()
 SATURATION = 0.8
 REFRESH_PERIOD_SECS = 5
-CLEAN_PERIOD_CYCLES = 20
+CLEAN_PERIOD_CYCLES = 3
 VISIBLE_WINDOW_WIDTH = 448
 VISIBLE_WINDOW_HEIGHT = 448
 
@@ -27,8 +27,9 @@ def set_secrets():
 def get_current_track_art_url():
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope = "user-read-currently-playing"))
     data = sp.currently_playing()
-    url = data['item']['album']['images'][0]['url']
-    return url
+    if data:
+        return data['item']['album']['images'][0]['url']
+    return None
 
 def update_display(url):
     urllib.request.urlretrieve(url, 'cover.jpeg')
@@ -36,7 +37,7 @@ def update_display(url):
     img = Image.open('cover.jpeg')
     img = img.resize((VISIBLE_WINDOW_WIDTH, VISIBLE_WINDOW_HEIGHT), Image.ANTIALIAS)
 
-    hidden_column_width = (inky.width - VISIBLE_WINDOW_WIDTH) / 2
+    hidden_column_width = (600 - VISIBLE_WINDOW_WIDTH) // 2
 
     img_resized = Image.new(img.mode, (inky.width, inky.height), (255, 255, 255))
     img_resized.paste(img, (hidden_column_width, 0))
@@ -46,13 +47,11 @@ def update_display(url):
     for y in range(inky.height - 1):
         for x in range(hidden_column_width - 1):
             inky.set_pixel(x, y, CLEAN)
-            inky.set_pixel(x + VISIBLE_WINDOW_WIDTH, y, CLEAN)
-
+            inky.set_pixel(600 - x - 1, y, CLEAN)
     inky.show()
 
 def clean():
 
-    print (f"CLEAN - h = {inky.height}, w = {inky.width}")
     for _ in range(2):
         for y in range(inky.height - 1):
             for x in range(inky.width - 1):
@@ -70,15 +69,15 @@ if __name__ == "__main__":
     while True:
         url = get_current_track_art_url()
 
-        print (f"h = {inky.height}, w = {inky.width}")
         if url != prev_url:
-            if ticks % CLEAN_PERIOD_CYCLES == 0:
+            if ticks % CLEAN_PERIOD_CYCLES == 1:
                 clean()
             
             prev_url = url
-            print ("Displaying new image: " + url)
-            update_display(url)
-            ticks = ticks + 1
+            if url != "":
+                print ("Displaying new image: " + url)
+                update_display(url)
+                ticks = ticks + 1
 
         time.sleep(REFRESH_PERIOD_SECS)
 
