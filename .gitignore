@@ -1,5 +1,5 @@
-# Hide secrets
-secrets.json
+# Hide authentication token
+auth.json
 
 # Ignore .idea files
 .idea/
