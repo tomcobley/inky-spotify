@@ -8,7 +8,7 @@ Designed for use with an [Inky Impression](https://shop.pimoroni.com/products/in
 
 2. Connect your display to a Pi, and clone this repo on the Pi. 
 
-3. Create a file called `secrets.json` with the following structure (get this information from Spotify Developers Portal) in the root of the repo:
+3. Create a file called `auth.json` with the following structure (get this information from Spotify Developers Portal) in the root of the repo:
 ```
 {
 	"spotify_client_id":     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
