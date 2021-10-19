@@ -1,6 +1,8 @@
 # inky-spotify
 Use a Raspberry Pi to display album art for your current Spotify listens on a 7-colour ePaper display.
 
+![screen](https://user-images.githubusercontent.com/32883278/137977275-e56d8853-5044-4e33-9517-3a3866ccc111.gif)
+
 ## Usage 
 Designed for use with an [Inky Impression](https://shop.pimoroni.com/products/inky-impression) 7 colour ePaper display. The ePaper display transitions bring the album art to life, and doesn't require power to maintain the image!
 
