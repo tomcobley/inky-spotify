@@ -29,5 +29,10 @@ Designed for use with an [Inky Impression](https://shop.pimoroni.com/products/in
 
 7. Enjoy the view. 
 
+## 3D Files
+Fits all models of Raspberry Pi. CAD files and STLs are included for download. Parts are connected with double-sided tape, assembly is self-explanatory!
+
+<img alt="Screenshot 2021-10-19 at 20 32 22" src="https://user-images.githubusercontent.com/32883278/137978057-2f4f6935-f0ee-4e25-b16a-e3ced27c390d.png">
+
 ## Authors
 @tomcobley and @bencobley
